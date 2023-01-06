@@ -1,0 +1,91 @@
+body{
+    padding: 0;
+    margin: 0;
+    /* overflow: visible; */
+}
+#messageBoard{
+    position:absolute;
+    /* bottom: 0; */
+    margin-left: 5vw;
+    --announcementVisibility: 1;
+    width: 18em;
+}
+#BottomInteractables{
+    position: sticky;
+    bottom: 0;
+    background-color: white;
+    border-top: 5px solid white;
+    margin-top: 5px;
+    border-bottom: 5px solid white;
+}
+#messages{
+    margin: 0;
+    padding: 0;
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+}
+#bottomButton{
+    filter: opacity(0);
+    transition: .2s ease-out;
+    position: absolute;
+    right: 0;
+    border: none;
+    top: 0;
+    outline: solid rgb(133, 133, 133) 1px;
+    border-radius: 2px;
+}
+form{
+    width: 100%;
+    display: flex;
+}
+form input{
+    width: 100%;
+}
+.msg{
+    overflow-wrap: break-word;
+    align-self:flex-end;
+    background-color: aliceblue;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2px 4px;
+    min-height: 26px;
+    margin: 4px;
+    min-width: 26px;
+    max-width: 80%;
+    border-radius: 8px;
+    list-style-type:none;
+    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 2px 13px -3px, rgba(0, 0, 0, 0.2) 0px -1px 0px inset;
+}
+.other{
+    align-self:flex-start;
+    background-color: aquamarine;
+}
+.announcement{
+    white-space : nowrap;
+    font-family : 'Courier New', Courier, monospace;
+    font-size   : 14px;
+    height      : calc(var(--announcementVisibility) * 18.4px);
+    transform   :  rotateX(calc((var(--announcementVisibility) - 1) * 90deg));
+    transition  : .5s ease-in;
+}
+[type="checkbox"]{
+    height: 19px;
+    display: block;
+    margin: 0; 
+    margin-right: 4px;
+    border: none; 
+    padding: 0;
+}
+#BottomInteractables p{
+    position: relative;
+    display: flex;
+    margin-bottom: 0;
+}
+ul{
+    list-style: none;
+}
+ul p{
+    margin: 0;
+}

@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/portalpap/SocketIo-Chat.git"
+  },
   "scripts": {
     "start": "node app.js",
     "startmon": "nodemon app.js",
