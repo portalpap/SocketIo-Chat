@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Hello Socket.IO</title>
+</head>
+
+<body onscroll="check()" onresize="check()">
+
+    <div id="messageBoard">
+        <ul id="messages"></ul>
+        <div id="BottomInteractables">
+            <form id="form" action="">
+                <input id="input" autocomplete="off" /><button>Send</button>
+            </form>
+            <p>
+                <input onchange="toggleAnounceVis(this.checked)" type="checkbox" checked>
+                Anouncements visible
+            <button onclick="scrollToBottom()" id="bottomButton">↓ Go to bottom ↓</button>
+
+            </p>
+        </div>
+
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+        const messages = document.getElementById('messages');
+        const form = document.getElementById('form');
+        const input = document.getElementById('input');
+        const r = document.getElementById('messageBoard');
+        const bottomButton = document.getElementById('bottomButton')
+
+        function toggleAnounceVis(val){
+            r.style.setProperty('--announcementVisibility', (val) ? 1 : 0);
+            setTimeout(() => {  check();    }, 600);
+        }
+
+        lastMessageID = '';
+        var user = {
+            "id" : undefined,
+            "username" : undefined
+        };
+
+        function addMessage(msg, socketID) {
+            if(lastMessageID == socketID){
+                let MessageTarget = messages.childNodes[messages.childNodes.length - 1];
+                let item = document.createElement('p');
+                item.textContent = msg;
+                MessageTarget.appendChild(item)
+            } else {
+                let item = document.createElement('li');
+                item.textContent = msg;
+                item.classList.add('msg');
+
+                if(socketID != socket.id)
+                    item.classList.add('other')
+                lastMessageID = socketID;
+                messages.appendChild(item);
+            }
+            scrollToBottom();
+        }
+
+        function addAnnouncement(msg) {
+            let item = document.createElement('li');
+            item.textContent = `${msg}`;
+            item.classList.add('announcement');
+
+            messages.appendChild(item);
+            scrollToBottom();
+            lastMessageID = 'none';
+        }
+
+        function scrollToBottom(){
+            window.scrollTo(0, r.scrollHeight);
+        }
+
+        function check(){
+            if(window.scrollY < r.scrollHeight - 1100){
+                bottomButton.style.filter = 'opacity(1)';
+            } else {
+                bottomButton.style.filter = 'opacity(0)';
+            }
+        }
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (input.value) {
+                socket.emit('chat message', input.value);
+                addMessage(input.value, socket.id);
+                input.value = '';
+            }
+        });
+        socket.on('announce', (msg)=>{
+            addAnnouncement(msg);
+        });
+        socket.on('chat message', (msg, isOther) => {
+            addMessage(msg, isOther);
+        });
+        socket.on('connect', () => {
+        });
+        socket.on('history', (data) => {
+            // console.log(data);
+            for(let iter of data){
+                switch (iter.slice(0,3)) {
+                    case 'MSG':
+                        if(iter.length > 0)
+                            addMessage(iter.slice(25, iter.length), iter.split('::')[0]);
+                        break;
+                    default:
+                        addAnnouncement(iter.slice(3,iter.length))
+                        break;
+                }
+            }
+        lastMessageID = data[data.length - 1].split('::')[0];
+        console.log(r.offsetHeight);
+        scrollToBottom();
+        check();
+        });
+        socket.on('error', (err) => {
+            console.log('there was an error', err);
+        })
+    </script>
+    <style>
+        body{
+            padding: 0;
+            margin: 0;
+            /* overflow: visible; */
+        }
+        #messageBoard{
+            position:absolute;
+            /* bottom: 0; */
+            margin-left: 5vw;
+            --announcementVisibility: 1;
+            width: 18em;
+        }
+        #BottomInteractables{
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            border-top: 5px solid white;
+            border-bottom: 5px solid white;
+        }
+        #messages{
+            margin: 0;
+            padding: 0;
+            display: flex;
+            width: 100%;
+            flex-direction: column;
+        }
+        #bottomButton{
+            filter: opacity(0);
+            transition: .2s ease-out;
+            position: absolute;
+            right: 0;
+            border: none;
+            top: 0;
+            outline: solid rgb(133, 133, 133) 1px;
+            border-radius: 2px;
+        }
+        form{
+            width: 100%;
+            display: flex;
+        }
+        form input{
+            width: 100%;
+        }
+        .msg{
+            overflow-wrap: break-word;
+            align-self:flex-end;
+            background-color: aliceblue;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2px 4px;
+            min-height: 26px;
+            margin: 4px;
+            min-width: 26px;
+            max-width: 80%;
+            border-radius: 8px;
+            list-style-type:none;
+            box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -1px 0px inset;
+        }
+        .other{
+            align-self:flex-start;
+            background-color: aquamarine;
+        }
+        .announcement{
+            white-space : nowrap;
+            font-family : 'Courier New', Courier, monospace;
+            font-size   : 14px;
+            height      : calc(var(--announcementVisibility) * 18.4px);
+            transform   :  rotateX(calc((var(--announcementVisibility) - 1) * 90deg));
+            transition  : .5s ease-in;
+        }
+        [type="checkbox"]{
+            height: 19px;
+            display: block;
+            margin: 0; 
+            margin-right: 4px;
+            border: none; 
+            padding: 0;
+        }
+        #BottomInteractables p{
+            position: relative;
+            display: flex;
+            margin-bottom: 0;
+        }
+        ul{
+            list-style: none;
+        }
+        ul p{
+            margin: 0;
+        }
+    </style>
+</body>
+
+
+</html>
